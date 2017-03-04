@@ -1,0 +1,9 @@
+= HOWTO: run service
+
+== Endpoints
+
+Go to http://<host>:<port>/index/{user_id}
+
+== Service locations
+
+Development instance - 188.166.174.189:8080

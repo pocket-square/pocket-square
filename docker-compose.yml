@@ -1,0 +1,68 @@
+version: "3.1"
+
+services:
+  pocket_square_mongo:
+    image: mongo:3.4.1
+    restart: on-failure:3
+    volumes:
+      - /data/mongodb:/data/db
+    command: --auth
+  pocket_square_users:
+    image: pocketsquare/pocket-square-users:develop
+    restart: on-failure:3
+    volumes:
+      - /logs:/logs
+    depends_on:
+      - pocket_square_mongo
+    environment:
+      - MONGO_PASSWORD=$MONGODB_PASSWORD # https://docs.docker.com/compose/compose-file/#secrets https://docs.docker.com/engine/swarm/secrets/#simple-example-get-started-with-secrets
+    ports:
+      - "28101:8080"
+  pocket_square_ingest:
+    image: pocketsquare/pocket-square-ingest:develop
+    restart: on-failure:3
+    depends_on:
+      - pocket_square_users
+    environment:
+      - POCKET_SQUARE_APP_KEY=$POCKET_SQUARE_APP_KEY # https://docs.docker.com/compose/compose-file/#secrets https://docs.docker.com/engine/swarm/secrets/#simple-example-get-started-with-secrets
+    ports:
+      - "28102:5000"
+  pocket_square_articles:
+    image: pocketsquare/pocket-square-articles:develop
+    restart: on-failure:3
+    volumes:
+      - /logs:/logs
+    depends_on:
+      - pocket_square_mongo
+      - pocket_square_ingest
+    environment:
+      - MONGO_PASSWORD=$MONGODB_PASSWORD # https://docs.docker.com/compose/compose-file/#secrets https://docs.docker.com/engine/swarm/secrets/#simple-example-get-started-with-secrets
+    ports:
+      - "28103:8080"
+  pocket_square_sort_shuffle:
+    image: pocketsquare/pocket-square-sort-shuffle:develop
+    restart: on-failure:3
+    depends_on:
+      - pocket_square_articles
+    ports:
+      - "28104:5000"
+  pocket_square_similar_by_text:
+    image: pocketsquare/pocket-square-similar-by-text:develop
+    restart: on-failure:3
+    depends_on:
+      - pocket_square_articles
+    ports:
+      - "28105:5000"
+  pocket_square_present:
+    image: pocketsquare/pocket-square-present:develop
+    restart: on-failure:3
+    depends_on:
+      - pocket_square_sort_shuffle
+      - pocket_square_users
+      - pocket_square_similar_by_text
+    ports:
+      - "8080:5000"
+
+volumes:
+  /data/mongodb
+  /logs
