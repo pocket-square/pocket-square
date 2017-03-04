@@ -1,10 +1,6 @@
-= pocket-square-present
+= pocket-square
 
-Service for presenting pocket-square data.
-
-TravisCI - https://travis-ci.org/pocket-square/pocket-square-present/
-
-DockerHub - https://hub.docker.com/r/pocketsquare/pocket-square-present/
+Compose configuration for all pocket-square services.
 
 == Documentation
 
